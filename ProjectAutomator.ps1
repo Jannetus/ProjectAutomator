@@ -88,7 +88,7 @@ $button.Add_Click({
         $lokiSisalto = "Projektiloki`n-----------------`nNimi: $nimi`nLuotu: $aika`nAlusta: $(if($radioYT.Checked){"YouTube"}else{"TikTok"})"
         $lokiSisalto | Out-File -FilePath "$paapolku\projektin_tiedot.txt"
 
-        [System.Windows.Forms.MessageBox]::Show("Projekti '$nimi' luotu työpöydälle!", "ProjectAutomator")
+        [System.Windows.Forms.MessageBox]::Show("Projekti '$nimi' luotu!", "ProjectAutomator")
         $form.Close()
     } else {
         [System.Windows.Forms.MessageBox]::Show("Samanniminen projekti on jo olemassa.", "Virhe")
