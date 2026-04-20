@@ -36,3 +36,5 @@ OneDrive-tuki: Skripti käyttää dynaamista metodia [System.Environment]::GetFo
 Pilvi-integraatio: Mahdollisuus luoda kansiot suoraan verkkolevyille.
 Template-tiedostot: Skripti voisi kopioida valmiin videoeditointiprojektin pohjan suoraan projektikansioon.
 Puhdistustyökalu: Toiminto, joka poistaisi automaattisesti raskaat välimuistitiedostot vanhoista ja valmiista projekteista.
+
+---

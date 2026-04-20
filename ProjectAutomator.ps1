@@ -116,3 +116,5 @@ $button.Add_Click({
 })
 $form.Controls.Add($button)
 $form.ShowDialog() | Out-Null
+
+#Tässä on otettu huomioon funktiot, try/catch sekä poikkeustilanteet/virheenkäsittely.
