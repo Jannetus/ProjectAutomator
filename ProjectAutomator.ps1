@@ -1,6 +1,6 @@
-# Project Automator v3.1 - OneDrive Compatible Edition
+# Project Automator v3.0 Viimeinen versio
 # Tekijä: Janne Karhunen
-# Kuvaus: Modulaarinen työkalu videoprojektien automatisointiin. Toimii myös OneDrive-ympäristössä.
+# Kuvaus: Työkalu videoprojektien automatisointiin.
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
