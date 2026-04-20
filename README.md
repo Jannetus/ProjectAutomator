@@ -1,4 +1,4 @@
-## Project Automator v3.0 Viimeinen versio
+## Project Automator v3.0 Viimeinen versio - Janne Karhunen
 ---
 ## Ohjelman tarkoitus
 Skripti on automatisoitu työkalu videotuotannon hallintaan. Sen avulla sisällöntuottaja voi luoda yhdellä komennolla standardisoidun kansiorakenteen uudelle videoprojektille. Ohjelma vähentää manuaalista työtä ja varmistaa, että kaikki tarvittavat resurssit (raakamateriaali, audio, grafiikka) pysyvät järjestyksessä.
