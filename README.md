@@ -1,4 +1,12 @@
-# Project Automator v3.0 Viimeinen versio - README
+# Project Automator v4.0 – Päivitykset ja uudet ominaisuudet
+1. Modulaarinen rakenne (LokienKirjaus.ps1)
+2. try-catch -lohkot on eriytetty omaan New-SafeDirectory -apufunktioonsa.
+3. Globaaleista muuttujista luopuminen
+4. Automaattinen Rollback-toiminto
+5. Käyttäjän antama projektin nimi tarkistetaan automaattisesti Windowsin kiellettyjen merkkien varalta ennen suoritusta.
+6. Järjestelmäpolkujen haku ja muuttujien laskenta suoritetaan vain kerran ohjelman käynnistyksen yhteydessä tai parametrien oletusarvoina, mikä tekee ohjelmasta nopeamman ja tehokkaamman.
+
+# Project Automator v3.0 - README
 
 ## Ohjelman tarkoitus
 ---

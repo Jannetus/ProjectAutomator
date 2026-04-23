@@ -1,64 +1,94 @@
-# Project Automator v3.0 Viimeinen versio
+# Project Automator v4.0
 # Tekijä: Janne Karhunen
 # Kuvaus: Työkalu videoprojektien automatisointiin.
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-# --- FUNKTIOT  ---
+# --- LISÄOSIEN LATAAMINEN ---
+$loggerPath = Join-Path $PSScriptRoot "LokienKirjaus.ps1"
+if (Test-Path $loggerPath) {
+    . $loggerPath 
+} else {
+    [System.Windows.Forms.MessageBox]::Show("Huomio: LokienKirjaus.ps1 -tiedostoa ei löydy samasta kansiosta! Lokikirjaus ei ole käytössä.", "Tietoa") | Out-Null
+}
 
+# --- APUFUNKTIOT ---
+function New-SafeDirectory {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$Path
+    )
+    try {
+        if (!(Test-Path $Path)) {
+            New-Item -ItemType Directory -Path $Path -ErrorAction Stop | Out-Null
+        }
+        return $true
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Virhe luotaessa kansiota '$Path':`n$($_.Exception.Message)", "Kansiovirhe") | Out-Null
+        return $false
+    }
+}
+
+# --- PÄÄFUNKTIO ---
 function New-ProjectStructure {
     param (
         [Parameter(Mandatory=$true)]
         [string]$ProjectName,
         
         [Parameter(Mandatory=$true)]
-        [string]$Platform
+        [string]$Platform,
+
+        [string]$RootPath = (Join-Path [Environment]::GetFolderPath("Desktop") "Projektit")
     )
 
-    try {
-        $desktopPath = [System.Environment]::GetFolderPath("Desktop")
-        $paakansio = Join-Path $desktopPath "Projektit"
+    if (!(New-SafeDirectory -Path $RootPath)) { return $false }
 
-        if (!(Test-Path $paakansio)) {
-            New-Item -ItemType Directory -Path $paakansio -ErrorAction Stop | Out-Null
-        }
+    $basePath = Join-Path $RootPath $ProjectName
 
-        $basePath = Join-Path $paakansio $ProjectName
-
-        if (Test-Path $basePath) {
-            [System.Windows.Forms.MessageBox]::Show("Virhe: Projekti '$ProjectName' on jo olemassa!", "Huomio") | Out-Null
-            return $false
-        }
-        
-
-        New-Item -ItemType Directory -Path $basePath -ErrorAction Stop | Out-Null
-        
-        $folders = @("Raakamateriaali", "Audio", "Grafiikka", "Editointi", "Valmiit Videot")
-        if ($Platform -eq "YouTube") { $folders += "YouTube Thumbnail" } else { $folders += "Pystyvideot" }
-
-        foreach ($folder in $folders) {
-            $targetPath = Join-Path $basePath $folder
-            New-Item -ItemType Directory -Path $targetPath -ErrorAction Stop | Out-Null
-        }
-
-        $timestamp = Get-Date -Format "dd.MM.yyyy HH:mm"
-        $logContent = "Projektiloki`n-----------------`nNimi: $ProjectName`nLuotu: $timestamp`nAlusta: $Platform"
-        $logContent | Out-File -FilePath (Join-Path $basePath "projektin_tiedot.txt") -Encoding utf8
-
-        return $true
-    }
-    catch {
-        [System.Windows.Forms.MessageBox]::Show("Virhe: $($_.Exception.Message)", "Virheenkäsittely") | Out-Null
+    if (Test-Path $basePath) {
+        [System.Windows.Forms.MessageBox]::Show("Virhe: Projekti '$ProjectName' on jo olemassa!", "Huomio") | Out-Null
         return $false
     }
+    
+    $luotuOnnistuneesti = $true
+
+    if (!(New-SafeDirectory -Path $basePath)) { return $false }
+    
+    $folders = @("Raakamateriaali", "Audio", "Grafiikka", "Editointi", "Valmiit Videot")
+    if ($Platform -eq "YouTube") { $folders += "YouTube Thumbnail" } else { $folders += "Pystyvideot" }
+
+
+    foreach ($folder in $folders) {
+        $targetPath = Join-Path $basePath $folder
+        if (!(New-SafeDirectory -Path $targetPath)) { 
+            $luotuOnnistuneesti = $false
+            break 
+        }
+    }
+
+    if (!$luotuOnnistuneesti) {
+        try {
+            Remove-Item -Path $basePath -Recurse -Force -ErrorAction Stop
+            [System.Windows.Forms.MessageBox]::Show("Kansioiden luonti johti virheeseen. Keskeneräinen projekti poistettiin automaattisesti.", "Peruutus tehty") | Out-Null
+        } catch {
+            [System.Windows.Forms.MessageBox]::Show("Kriittinen virhe: Keskeneräistä projektia ei voitu poistaa!`n$($_.Exception.Message)", "Rollback epäonnistui") | Out-Null
+        }
+        return $false
+    }
+
+    if (Get-Command "Write-ProjectLog" -ErrorAction SilentlyContinue) {
+        Write-ProjectLog -BasePath $basePath -ProjectName $ProjectName -Platform $Platform
+    }
+
+    return $true
 }
 
 
 # --- GRAAFINEN KÄYTTÖLIITTYMÄ  ---
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "Project Automator v3.0 ~ Made By Janne Karhunen"
+$form.Text = "Project Automator v4.0 ~ Made By Janne Karhunen"
 $form.Size = New-Object System.Drawing.Size(420,350)
 $form.StartPosition = "CenterScreen"
 $form.BackColor = [System.Drawing.Color]::FromArgb(30, 30, 30)
@@ -102,8 +132,14 @@ $button.FlatStyle = "Flat"
 
 $button.Add_Click({
     $name = $textBox.Text
+    
     if ([string]::IsNullOrWhiteSpace($name)) {
         [System.Windows.Forms.MessageBox]::Show("Anna projektille nimi!", "Huomio")
+        return
+    }
+
+    if ($name.IndexOfAny([System.IO.Path]::GetInvalidFileNameChars()) -ge 0) {
+        [System.Windows.Forms.MessageBox]::Show("Projektin nimessä on kiellettyjä merkkejä!`nKansio ei saa sisältää seuraavia merkkejä: \ / : * ? `" < > |", "Virheellinen syöte") | Out-Null
         return
     }
 
@@ -116,5 +152,3 @@ $button.Add_Click({
 })
 $form.Controls.Add($button)
 $form.ShowDialog() | Out-Null
-
-#Tässä skriptissä on nyt otettu huomioon funktiot, try/catch sekä poikkeustilanteet/virheenkäsittely.
